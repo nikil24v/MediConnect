@@ -1,0 +1,12 @@
+{
+  "name": "mediconnect",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install && pip install -r ml-service/requirements.txt",
+    "train": "python ml-service/train.py",
+    "ml": "python ml-service/app.py",
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev",
+    "seed": "npm --prefix server run seed"
+  }
+}

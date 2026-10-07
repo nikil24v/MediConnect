@@ -1,78 +1,40 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { authApi } from "../api/endpoints.js";
+import api from "../api/client";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem("mediconnect_user");
-    return raw ? JSON.parse(raw) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // On page load: if a token exists, fetch the logged-in user
   useEffect(() => {
-    const token = localStorage.getItem("mediconnect_token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    authApi
-      .me()
-      .then((me) => {
-        const merged = { id: me.id, name: me.name, email: me.email, role: me.role, profile: me.profile };
-        setUser(merged);
-        localStorage.setItem("mediconnect_user", JSON.stringify(merged));
-      })
-      .catch(() => {
-        // A 401 here is already handled by the axios interceptor (it only clears storage
-        // if this token is still the current one) - nothing extra to do.
-      })
+    const token = localStorage.getItem("mc_token");
+    if (!token) return setLoading(false);
+    api.get("/auth/me")
+      .then((r) => setUser(r.data))
+      .catch(() => localStorage.removeItem("mc_token"))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    const handleUnauthorized = () => setUser(null);
-    window.addEventListener("mediconnect:unauthorized", handleUnauthorized);
-    return () => window.removeEventListener("mediconnect:unauthorized", handleUnauthorized);
-  }, []);
-
-  // Both login and register only return { id, name, email, role } - fetch /auth/me right
-  // after so `user.profile` (needed by e.g. the Patient/Doctor profile pages) is always
-  // populated immediately, not just after a hard refresh triggers the mount-time check.
-  const loadFullUser = async (token) => {
-    localStorage.setItem("mediconnect_token", token);
-    const me = await authApi.me();
-    const merged = { id: me.id, name: me.name, email: me.email, role: me.role, profile: me.profile };
-    localStorage.setItem("mediconnect_user", JSON.stringify(merged));
-    setUser(merged);
-    return merged;
+  const saveSession = ({ token, user }) => {
+    localStorage.setItem("mc_token", token);
+    setUser(user);
+    return user;
   };
 
-  const login = async (email, password) => {
-    const data = await authApi.login({ email, password });
-    return loadFullUser(data.token);
-  };
-
-  const register = async (payload) => {
-    const data = await authApi.register(payload);
-    return loadFullUser(data.token);
-  };
-
+  const login = async (email, password) => saveSession((await api.post("/auth/login", { email, password })).data);
+  const register = async (data) => saveSession((await api.post("/auth/register", data)).data);
   const logout = () => {
-    localStorage.removeItem("mediconnect_token");
-    localStorage.removeItem("mediconnect_user");
+    localStorage.removeItem("mc_token");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-}
+export const useAuth = () => useContext(AuthContext);

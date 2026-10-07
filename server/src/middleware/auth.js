@@ -1,33 +1,21 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-// Verifies the JWT (from the Authorization: Bearer header) and attaches req.user
-async function protect(req, res, next) {
+// Checks the "Authorization: Bearer <token>" header and attaches the user to req
+export async function protect(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) return res.status(401).json({ message: "Not logged in" });
   try {
-    const header = req.headers.authorization || "";
-    const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-    if (!token) return res.status(401).json({ error: "Not authenticated" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    if (!user || !user.isActive) {
-      return res.status(401).json({ error: "Account not found or deactivated" });
-    }
-    req.user = user;
+    const { id } = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(id);
+    if (!req.user) return res.status(401).json({ message: "User not found" });
     next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token" });
+  } catch {
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 }
 
-// Route-level RBAC: authorize("admin", "doctor") only lets those roles through
-function authorize(...roles) {
-  return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ error: "You do not have permission to perform this action" });
-    }
-    next();
-  };
-}
-
-module.exports = { protect, authorize };
+// Allows only the given roles, e.g. allow("doctor")
+export const allow = (...roles) => (req, res, next) =>
+  roles.includes(req.user.role) ? next() : res.status(403).json({ message: "Access denied" });

@@ -1,0 +1,5 @@
+{
+  "python.analysis.extraPaths": [
+    "ml-service/venv/lib/python3.10/site-packages"
+  ]
+}

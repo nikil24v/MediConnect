@@ -1,113 +1,101 @@
-# MediConnect — Hospital, Appointment & Pharmacy Management System
+# MediConnect – AI-Powered Healthcare Platform
 
-A full-stack **MERN** application with role-based access control (RBAC) across three dedicated
-portals — **Admin**, **Doctor** and **Patient** — covering appointment scheduling, digital
-prescriptions and in-app pharmacy ordering for a hospital/clinic setting.
+MediConnect is a MERN stack web app that connects **patients** and **doctors**.
+It has a **Machine Learning symptom checker**: the patient selects symptoms and
+the model predicts the top 3 possible diseases. It then suggests the right specialist,
+and the patient can book that doctor directly.
 
-## Highlights
+## Architecture
 
-- **Role-Based Access Control** with three portals (Admin / Doctor / Patient) across 10
-  departments and 6 core modules: doctor management, patient management, appointment
-  scheduling, digital prescriptions, pharmacy inventory & ordering, and dashboard analytics.
-- **JWT authentication** with bcrypt password hashing, route-level RBAC middleware enforcing
-  role permissions across 25+ REST API endpoints, and an Axios interceptor that auto-attaches
-  the token to every request and reacts to session expiry without a hard page reload.
-- **7 MongoDB data models** (User, Doctor, Patient, Appointment, Prescription, Medicine, Order)
-  with real appointment-slot clash detection, atomic pharmacy stock deduction on checkout, and
-  auto-completion of an appointment once a doctor files its prescription.
-- **Admin analytics dashboard** with live aggregation queries (Mongo `$group`) visualized via
-  Recharts — appointments by department, orders by status, revenue, low-stock alerts.
-- **Responsive, component-based UI** built with Tailwind CSS and client-side routing via
-  React Router DOM, with role-scoped protected routes and per-portal navigation.
+| Folder        | What it is                                                 |
+| ------------- | ---------------------------------------------------------- |
+| `client/`     | React frontend (UI, pages, routing)                        |
+| `server/`     | Express REST API, JWT auth, MongoDB models                 |
+| `ml-service/` | Python: dataset, Random Forest training, Flask predict API |
 
-## Stack
+## Features (Review 1)
 
-| Layer    | Tech |
-|----------|------|
-| Frontend | React 18 (Vite), React Router DOM, Tailwind CSS, Recharts, Axios |
-| Backend  | Node.js, Express, Mongoose |
-| Database | MongoDB |
-| Auth     | JWT + bcrypt, route-level RBAC middleware |
+**Patient:** register/login · AI symptom checker (132 symptoms → 41 diseases) ·
+specialist suggestion · find & book doctors (date + time slot) · cancel appointments ·
+health history of all AI checks · dashboard · profile
 
-## Project structure
+**Doctor:** dashboard (today's visits, pending requests) · accept / reject / complete
+appointments · view patient's **AI pre-screening report** · add notes for the patient
 
-```
-MediConnect/
-├── server/                  Express REST API
-│   └── src/
-│       ├── config/          DB connection + shared constants (roles, departments, statuses)
-│       ├── models/          User, Doctor, Patient, Appointment, Prescription, Medicine, Order
-│       ├── middleware/      JWT auth (protect) + RBAC (authorize)
-│       ├── controllers/     Business logic per resource
-│       ├── routes/          Route definitions wired to controllers + middleware
-│       └── utils/           Token generation, DB seed script
-└── client/                  React (Vite) SPA
-    └── src/
-        ├── api/              Axios instance (interceptors) + typed endpoint helpers
-        ├── context/          AuthContext (login/register/logout, session state)
-        ├── components/       Shared UI: PortalLayout, ProtectedRoute, StatCard, Badge...
-        └── pages/
-            ├── auth/         Login, Register
-            ├── admin/        Dashboard, Doctors, Patients, Appointments, Medicines, Orders
-            ├── doctor/       Dashboard, Queue, Prescribe, Patients, Prescriptions
-            └── patient/      Dashboard, Book Appointment, Prescriptions, Pharmacy, Orders, Profile
+## Machine Learning (ml-service)
+
+- **Dataset:** Disease Prediction dataset (Kaggle) – 4,920 rows, 132 symptom columns (0/1), 41 diseases
+- **Cleaning:** removed duplicate rows → **304 unique records**
+- **Algorithm:** Random Forest (100 decision trees, majority vote)
+- **Split:** 75% train / 25% test
+- **Result:** Accuracy, Precision, Recall, F1 = 100% on test data (small, clean dataset)
+- `train.py` trains and saves the model → `app.py` loads it and serves predictions
+
+## How to run (Windows / Linux)
+
+### 1. Requirements
+
+- Node.js 18+
+- Python 3.10+
+- MongoDB: either local MongoDB Community Server, or a free MongoDB Atlas cluster
+
+### 2. ML service (terminal 1)
+
+```bash
+cd ml-service
+pip install -r requirements.txt
+python train.py        # trains the model (already trained, re-run anytime)
+python app.py          # runs on http://localhost:5001
 ```
 
-## Getting started
-
-### 1. Backend
+### 3. Backend (terminal 2)
 
 ```bash
 cd server
-cp .env.example .env   # set MONGODB_URI and a real JWT_SECRET
 npm install
-npm run seed            # creates an admin account + 5 sample doctors + pharmacy stock
-npm run dev
+copy .env.example .env      # Linux/Mac: cp .env.example .env
+# edit .env -> set MONGO_URI (local or Atlas) and a JWT_SECRET
+npm run seed                # adds 9 demo doctors + 1 demo patient
+npm run dev                 # http://localhost:5000
 ```
 
-The seed script prints the admin and doctor login credentials it creates (default:
-`admin@mediconnect.com` / `Admin@123`). Patients always self-register from the app.
-
-### 2. Frontend
+### 4. Frontend (terminal 3)
 
 ```bash
 cd client
-cp .env.example .env
 npm install
-npm run dev
+npm run dev                 # open http://localhost:5173
 ```
 
-Open http://localhost:5173.
+### Demo logins
 
-## Core flows
+| Role    | Email                   | Password   |
+| ------- | ----------------------- | ---------- |
+| Patient | patient@mediconnect.com | patient123 |
+| Doctor  | arun@mediconnect.com    | doctor123  |
 
-1. **Patient** registers, browses doctors by department, and books an appointment slot.
-2. **Doctor** confirms the appointment from their queue, then records a diagnosis and one or
-   more medicines — this automatically marks the appointment `completed`.
-3. **Patient** sees the prescription under *My Prescriptions* and can order the medicines (or
-   anything else in stock) from the *Pharmacy*; checkout atomically deducts stock and creates
-   a bill.
-4. **Admin** manages doctor accounts and pharmacy inventory, tracks every appointment/order, and
-   reviews hospital-wide analytics on the dashboard.
+All 9 doctors log in with their first name, e.g. `priya@mediconnect.com`, password `doctor123`
 
-## API overview (25+ endpoints)
+## API summary
 
-- `POST /api/auth/register|login`, `GET /api/auth/me`
-- `GET/POST/PATCH /api/doctors`, `PATCH /api/doctors/:id/active`
-- `GET/PATCH /api/patients`
-- `GET/POST /api/appointments`, `PATCH /api/appointments/:id/status`
-- `GET/POST /api/prescriptions`
-- `GET/POST/PATCH/DELETE /api/medicines`
-- `GET/POST /api/orders`, `PATCH /api/orders/:id/status`
-- `GET /api/dashboard/admin`, `GET /api/dashboard/doctor`
+| Method  | Route                     | Who     | Purpose                 |
+| ------- | ------------------------- | ------- | ----------------------- |
+| POST    | /api/auth/register        | public  | Create account          |
+| POST    | /api/auth/login           | public  | Login → JWT             |
+| GET/PUT | /api/auth/me              | any     | Get / update profile    |
+| GET     | /api/doctors              | any     | List doctors            |
+| GET     | /api/appointments         | any     | My appointments         |
+| POST    | /api/appointments         | patient | Book (slot clash check) |
+| PATCH   | /api/appointments/:id     | both    | Status / doctor notes   |
+| GET     | /api/predictions/symptoms | any     | Symptom list (from ML)  |
+| POST    | /api/predictions          | patient | Run ML + save result    |
+| GET     | /api/predictions          | patient | My AI history           |
 
-Every route beyond `/auth` requires a valid JWT; role-restricted routes are additionally
-gated by an `authorize(...roles)` middleware, enforced server-side (verified independently of
-the UI).
+## Future implementation (Review 2)
 
-## Notes
+- **AI prescription scanner:** upload a prescription photo → Vision AI / OCR extracts medicines → patient confirms → saved
+- **DevOps:** Docker + Docker Compose, CI/CD pipeline with GitHub Actions
+- **Cloud deployment:** Vercel (frontend), Render (backend + ML), MongoDB Atlas
+- **Monitoring:** health-check endpoints and logging
 
-- This is a portfolio/demo project, not a certified medical system — no PHI/HIPAA compliance
-  work has been done.
-- No email/notification or background-job layer by design; all state changes are synchronous
-  and immediately reflected via the REST API.
+> ⚠️ AI predictions are for information only and are not a medical diagnosis.

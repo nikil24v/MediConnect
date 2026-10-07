@@ -1,23 +1,28 @@
-const mongoose = require("mongoose");
-const { DEPARTMENTS, APPOINTMENT_STATUS } = require("../config/constants");
+import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema(
   {
-    patient: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true },
-    doctor: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor", required: true },
-    department: { type: String, enum: DEPARTMENTS, required: true },
-    date: { type: Date, required: true },
-    timeSlot: { type: String, required: true },
-    reason: { type: String, trim: true },
+    patient: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    doctor: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    date: { type: String, required: true }, // "2026-10-10"
+    time: { type: String, required: true }, // "10:30"
+    reason: { type: String, default: "" },
+    prediction: { type: mongoose.Schema.Types.ObjectId, ref: "Prediction" }, // optional AI pre-screening
     status: {
       type: String,
-      enum: Object.values(APPOINTMENT_STATUS),
-      default: APPOINTMENT_STATUS.PENDING,
+      enum: ["pending", "confirmed", "completed", "cancelled"],
+      default: "pending",
     },
+    notes: { type: String, default: "" }, // doctor's notes
   },
   { timestamps: true }
 );
 
-appointmentSchema.index({ doctor: 1, date: 1, timeSlot: 1 });
+// Database-level safety: one doctor cannot have 2 active bookings in the same slot.
+// Even if 2 patients click "Book" at the exact same moment, MongoDB rejects the second one.
+appointmentSchema.index(
+  { doctor: 1, date: 1, time: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ["pending", "confirmed"] } } }
+);
 
-module.exports = mongoose.model("Appointment", appointmentSchema);
+export default mongoose.model("Appointment", appointmentSchema);

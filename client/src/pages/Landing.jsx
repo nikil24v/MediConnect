@@ -1,73 +1,95 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { Brain, CalendarCheck, ShieldCheck, Stethoscope, History, Sparkles, ArrowRight, Activity } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import Logo from "../components/Logo";
 
 const FEATURES = [
-  {
-    title: "Book appointments in seconds",
-    body: "Browse doctors by department, pick an open slot, and track status from pending to completed.",
-  },
-  {
-    title: "Digital prescriptions",
-    body: "Doctors record diagnosis and medicines during the visit; patients can view them anytime.",
-  },
-  {
-    title: "In-app pharmacy",
-    body: "Order prescribed or over-the-counter medicines straight from the app, with live stock tracking.",
-  },
-  {
-    title: "Role-based access",
-    body: "Dedicated Admin, Doctor and Patient portals, each scoped to exactly what that role should see.",
-  },
+  { icon: Brain, color: "i-teal", title: "AI Symptom Checker", text: "Select your symptoms and our ML model predicts the top 3 possible conditions with confidence scores." },
+  { icon: Stethoscope, color: "i-indigo", title: "Right Specialist", text: "Get a specialist suggestion for the predicted condition and book them in one click." },
+  { icon: CalendarCheck, color: "i-green", title: "Easy Appointments", text: "Pick a doctor, date and time slot. Doctors confirm, complete or add notes to your visit." },
+  { icon: History, color: "i-amber", title: "Health History", text: "Every AI check is saved so you and your doctor can track symptoms over time." },
+  { icon: ShieldCheck, color: "i-rose", title: "Secure by Design", text: "JWT authentication, hashed passwords and role-based access for patients and doctors." },
+  { icon: Activity, color: "i-teal", title: "Doctor Dashboard", text: "Doctors see upcoming visits along with the patient's AI pre-screening report." },
 ];
 
 export default function Landing() {
+  const { user } = useAuth();
+  if (user) return <Navigate to="/dashboard" replace />;
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-lg font-bold text-white">
-              +
-            </span>
-            <span className="text-xl font-bold text-slate-800">MediConnect</span>
-          </div>
-          <div className="flex gap-3">
-            <Link to="/login" className="btn-secondary">
-              Log in
-            </Link>
-            <Link to="/register" className="btn-primary">
-              Register as Patient
-            </Link>
+    <div>
+      <nav className="land-nav">
+        <Logo />
+        <div className="flex">
+          <Link to="/login" className="btn btn-ghost">Log in</Link>
+          <Link to="/register" className="btn btn-primary">Get started</Link>
+        </div>
+      </nav>
+
+      <section className="hero">
+        <div>
+          <span className="pill"><Sparkles size={14} /> Machine learning powered healthcare</span>
+          <h1>Check symptoms. <span>Find the right doctor.</span> Book in seconds.</h1>
+          <p>MediConnect connects patients and doctors on one platform, with an AI symptom checker that suggests possible conditions before your visit.</p>
+          <div className="flex wrap">
+            <Link to="/register" className="btn btn-primary btn-lg">Start free <ArrowRight size={18} /></Link>
+            <Link to="/login" className="btn btn-outline btn-lg">I'm a doctor</Link>
           </div>
         </div>
-      </header>
 
-      <section className="mx-auto max-w-6xl px-6 py-20 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Hospital, appointments and pharmacy —{" "}
-          <span className="text-brand-600">one connected system</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-          MediConnect is a full-stack MERN platform with role-based Admin, Doctor and Patient
-          portals covering appointment scheduling, digital prescriptions and pharmacy ordering.
-        </p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Link to="/register" className="btn-primary px-6 py-3 text-base">
-            Get started as a Patient
-          </Link>
-          <Link to="/login" className="btn-secondary px-6 py-3 text-base">
-            Staff / Doctor login
-          </Link>
+        <div className="hero-card">
+          <div className="flex between mb">
+            <strong>AI Symptom Check</strong>
+            <span className="badge badge-brand">Random Forest</span>
+          </div>
+          <div className="chips mb">
+            {["Itching", "Skin rash", "Nodal skin eruptions"].map((s) => <span key={s} className="chip on">{s}</span>)}
+          </div>
+          {[["Fungal infection", 84], ["Drug reaction", 6], ["Acne", 5]].map(([d, c], i) => (
+            <div key={d} className={`result ${i === 0 ? "top" : ""}`}>
+              <div className="flex between"><strong>{d}</strong><span className="conf">{c}%</span></div>
+              <div className="bar"><span style={{ width: `${c}%` }} /></div>
+            </div>
+          ))}
+          <p className="small muted">Suggested specialist: <strong style={{ color: "var(--brand)" }}>Dermatologist</strong></p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 pb-20 sm:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="card">
-            <h3 className="font-semibold text-slate-800">{f.title}</h3>
-            <p className="mt-2 text-sm text-slate-500">{f.body}</p>
-          </div>
-        ))}
+      <section className="section">
+        <h2>Everything in one place</h2>
+        <p className="sub">Built with the MERN stack and a Python machine learning service.</p>
+        <div className="grid grid-3">
+          {FEATURES.map(({ icon: Icon, color, title, text }) => (
+            <div key={title} className="card feature">
+              <div className={`stat-icon ${color}`}><Icon size={22} /></div>
+              <h3>{title}</h3>
+              <p className="muted small">{text}</p>
+            </div>
+          ))}
+        </div>
       </section>
+
+      <section className="section" style={{ background: "#fff" }}>
+        <h2>How it works</h2>
+        <p className="sub">Three simple steps from symptoms to consultation.</p>
+        <div className="grid grid-3">
+          {[
+            ["Describe symptoms", "Search and select what you're feeling from 132 symptoms."],
+            ["Get AI insights", "The ML model predicts likely conditions and suggests a specialist."],
+            ["Book a doctor", "Choose a slot. Your AI report is shared with the doctor."],
+          ].map(([t, d], i) => (
+            <div key={t} className="card">
+              <div className="step-num">{i + 1}</div>
+              <h3 style={{ fontSize: 17, marginBottom: 6 }}>{t}</h3>
+              <p className="muted small">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="footer">
+        © {new Date().getFullYear()} MediConnect · AI predictions are not a medical diagnosis. Always consult a doctor.
+      </footer>
     </div>
   );
 }
