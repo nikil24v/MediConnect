@@ -17,6 +17,7 @@ router.post("/register", async (req, res) => {
     const { name, email, password, role = "patient", specialization, phone, age, gender, experience, fee } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Name, email and password are required" });
     if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
+    if (!["patient", "doctor"].includes(role)) return res.status(403).json({ message: "This account type cannot be created here" }); // pharmacists are added by the admin
     if (await User.findOne({ email })) return res.status(409).json({ message: "Email already registered" });
     if (role === "doctor" && !specialization) return res.status(400).json({ message: "Specialization is required for doctors" });
 
@@ -41,9 +42,21 @@ router.get("/me", protect, (req, res) => res.json(req.user));
 
 // PUT /api/auth/me  (update own profile)
 router.put("/me", protect, async (req, res) => {
-  const fields = ["name", "phone", "age", "gender", "specialization", "experience", "fee"];
+  const fields = [
+    "name", "phone", "age", "gender", "specialization", "experience", "fee",
+    "bloodGroup", "allergies", "conditions", "emergencyContact", "familyEmail", "notifyFamily", // health record (patients)
+  ];
   fields.forEach((f) => req.body[f] !== undefined && (req.user[f] = req.body[f]));
-  await req.user.save();
+
+  if (req.user.notifyFamily && !req.user.familyEmail)
+    return res.status(400).json({ message: "Add a family email before turning on family emails" });
+
+  try {
+    await req.user.save();
+  } catch (err) {
+    if (err.name === "ValidationError") return res.status(400).json({ message: Object.values(err.errors)[0].message });
+    throw err;
+  }
   res.json(req.user);
 });
 
