@@ -31,3 +31,11 @@ export const initials = (name = "") =>
 export const TIME_SLOTS = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"];
 
 export const today = () => new Date().toISOString().slice(0, 10);
+
+export const rupees = (n) => "₹" + Number(n).toLocaleString("en-IN");
+
+export const fmtDateTime = (d) =>
+  new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+
+// Short order number shown to people, same as in the emails (#073B67)
+export const orderNo = (order) => "#" + order._id.slice(-6).toUpperCase();

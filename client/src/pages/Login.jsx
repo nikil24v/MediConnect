@@ -59,6 +59,7 @@ export default function Login() {
             <div className="flex wrap mt" style={{ marginTop: 8 }}>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => fill("patient@mediconnect.com", "patient123")}>Patient</button>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => fill("arun@mediconnect.com", "doctor123")}>Doctor</button>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => fill("pharmacist@mediconnect.com", "pharmacist123")}>Pharmacist</button>
             </div>
           </div>
         </form>

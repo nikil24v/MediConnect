@@ -245,3 +245,32 @@ textarea.input { resize: vertical; min-height: 80px; }
   .hero h1 { font-size: 36px; }
   .slots { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ---------- Medicine store, cart, orders ---------- */
+.nav-badge { margin-left: auto; background: #2dd4bf; color: #042f2e; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 8px; }
+.med-card { display: flex; flex-direction: column; gap: 12px; }
+.med-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--brand-50); color: var(--brand); display: grid; place-items: center; overflow: hidden; }
+.med-icon img { width: 100%; height: 100%; object-fit: cover; }
+.med-card .low { color: #b45309; font-weight: 600; }
+.med-card .out { color: var(--danger); font-weight: 600; }
+.qty { display: flex; align-items: center; gap: 8px; }
+.qty span { min-width: 22px; text-align: center; font-weight: 700; }
+.cart-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: start; }
+.order-placed { background: #fef3c7; color: #92400e; }
+.order-packed { background: #dbeafe; color: #1e40af; }
+.order-shipped { background: #e0e7ff; color: #3730a3; }
+.order-delivered { background: #dcfce7; color: #166534; }
+
+/* order progress tracker: 4 steps joined by a line */
+.tracker { display: grid; grid-template-columns: repeat(4, 1fr); }
+.tstep { position: relative; text-align: center; font-size: 12px; color: var(--muted); }
+.tstep::before { content: ""; position: absolute; top: 13px; left: -50%; width: 100%; height: 3px; background: #e2e8f0; }
+.tstep:first-child::before { display: none; }
+.tstep.done::before { background: var(--brand); }
+.tdot { position: relative; z-index: 1; width: 28px; height: 28px; margin: 0 auto 6px; border-radius: 50%; background: #e2e8f0; color: #fff; display: grid; place-items: center; }
+.tstep.done .tdot { background: var(--brand); }
+.tlabel { font-weight: 700; color: var(--text); }
+.ttime { font-size: 11px; }
+@media (max-width: 760px) { .cart-grid { grid-template-columns: minmax(0, 1fr); } }
+.cart-line { flex-wrap: wrap; }
+.cart-line .grow { flex: 1 1 200px; min-width: 200px; }
