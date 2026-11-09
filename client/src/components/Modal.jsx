@@ -1,9 +1,9 @@
 import { X } from "lucide-react";
 
-export default function Modal({ title, subtitle, onClose, children }) {
+export default function Modal({ title, subtitle, onClose, wide, children }) {
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" style={wide ? { maxWidth: 780 } : undefined} onClick={(e) => e.stopPropagation()}>
         <div className="flex between" style={{ alignItems: "flex-start", marginBottom: 18 }}>
           <div>
             <h3>{title}</h3>

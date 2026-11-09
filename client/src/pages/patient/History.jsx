@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { History as HistoryIcon, Trash2 } from "lucide-react";
 import api from "../../api/client";
+import { fmtDate } from "../../utils/helpers";
 import Empty from "../../components/Empty";
+import PrescriptionCard from "../../components/PrescriptionCard";
 
 export default function History() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]); // AI symptom checks
+  const [rxs, setRxs] = useState([]); // prescriptions
   const [loading, setLoading] = useState(true);
 
-  const load = () => api.get("/predictions").then((r) => setItems(r.data)).finally(() => setLoading(false));
+  const load = () =>
+    Promise.all([api.get("/predictions"), api.get("/prescriptions")])
+      .then(([p, r]) => { setItems(p.data); setRxs(r.data); })
+      .finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
   const remove = async (id) => {
@@ -18,10 +24,27 @@ export default function History() {
   };
 
   if (loading) return <div className="loader"><div className="spinner" /></div>;
-  if (!items.length)
-    return <div className="card"><Empty icon={HistoryIcon} title="No AI checks yet" text="Your symptom check results will be saved here." action={<Link to="/symptom-checker" className="btn btn-primary btn-sm">Run a check</Link>} /></div>;
+  if (!items.length && !rxs.length)
+    return <div className="card"><Empty icon={HistoryIcon} title="No history yet" text="Your prescriptions and symptom check results will be saved here." action={<Link to="/symptom-checker" className="btn btn-primary btn-sm">Run a check</Link>} /></div>;
 
   return (
+    <>
+    {rxs.length > 0 && (
+      <div className="mb">
+        <div className="card-title">Prescriptions</div>
+        {rxs.map((rx) => (
+          <div key={rx._id} className="card mb">
+            <div className="flex between wrap">
+              <div className="title">{rx.doctor?.name} <span className="muted small">· {rx.doctor?.specialization}</span></div>
+              <div className="small muted">{fmtDate(rx.createdAt)}</div>
+            </div>
+            <PrescriptionCard rx={rx} canDownload canBuy />
+          </div>
+        ))}
+      </div>
+    )}
+
+    {items.length > 0 && <div className="card-title">AI symptom checks</div>}
     <div className="grid grid-2">
       {items.map((p) => (
         <div key={p._id} className="card">
@@ -44,5 +67,6 @@ export default function History() {
         </div>
       ))}
     </div>
+    </>
   );
 }

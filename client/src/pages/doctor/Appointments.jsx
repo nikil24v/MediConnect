@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, Brain, Check, X, ClipboardCheck } from "lucide-react";
+import { CalendarDays, Clock, Brain, Check, X, ClipboardCheck, FileText } from "lucide-react";
 import api, { errMsg } from "../../api/client";
 import { fmtDate, fmtTime, initials } from "../../utils/helpers";
 import Empty from "../../components/Empty";
 import Modal from "../../components/Modal";
+import PrescriptionForm from "../../components/PrescriptionForm";
 
 const TABS = ["pending", "confirmed", "completed", "cancelled", "all"];
 
@@ -11,6 +12,7 @@ export default function DoctorAppointments() {
   const [appts, setAppts] = useState([]);
   const [tab, setTab] = useState("pending");
   const [open, setOpen] = useState(null); // appointment shown in modal
+  const [rxFor, setRxFor] = useState(null); // appointment whose prescription form is open
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -50,8 +52,13 @@ export default function DoctorAppointments() {
               <div className="flex small muted" style={{ marginTop: 2 }}><CalendarDays size={14} /> {fmtDate(a.date)} <Clock size={14} /> {fmtTime(a.time)}</div>
               {a.reason && <div className="small" style={{ marginTop: 4 }}>{a.reason}</div>}
             </div>
-            <div className="flex">
+            <div className="flex wrap">
               <button className="btn btn-outline btn-sm" onClick={() => show(a)}>Details</button>
+              {(a.status === "confirmed" || a.status === "completed") && (
+                <button className="btn btn-primary btn-sm" onClick={() => setRxFor(a)}>
+                  <FileText size={15} /> {a.status === "completed" ? "View / Edit Prescription" : "Write Prescription"}
+                </button>
+              )}
               {a.status === "pending" && (
                 <>
                   <button className="btn btn-success btn-sm" onClick={() => update(a._id, { status: "confirmed" })}><Check size={15} /> Accept</button>
@@ -59,11 +66,16 @@ export default function DoctorAppointments() {
                 </>
               )}
               {a.status === "confirmed" && (
-                <button className="btn btn-primary btn-sm" onClick={() => update(a._id, { status: "completed" })}><ClipboardCheck size={15} /> Complete</button>
+                <button className="btn btn-outline btn-sm" onClick={() => update(a._id, { status: "completed" })}><ClipboardCheck size={15} /> Complete</button>
               )}
             </div>
           </div>
         ))
+      )}
+
+      {rxFor && (
+        <PrescriptionForm appointment={rxFor} onClose={() => setRxFor(null)}
+          onSaved={() => { setRxFor(null); load(); }} />
       )}
 
       {open && (
