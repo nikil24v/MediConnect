@@ -274,3 +274,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 @media (max-width: 760px) { .cart-grid { grid-template-columns: minmax(0, 1fr); } }
 .cart-line { flex-wrap: wrap; }
 .cart-line .grow { flex: 1 1 200px; min-width: 200px; }
+
+/* photo on the left, form on the right (stacks on phones) */
+.split-grid { grid-template-columns: minmax(0, 260px) minmax(0, 1fr); align-items: start; }
+@media (max-width: 760px) { .split-grid { grid-template-columns: minmax(0, 1fr); } }

@@ -10,11 +10,21 @@ import recordRoutes from "./routes/records.js";
 import prescriptionRoutes from "./routes/prescriptions.js";
 import medicineRoutes from "./routes/medicines.js";
 import orderRoutes from "./routes/orders.js";
+import scanRoutes from "./routes/scans.js";
 import devRoutes from "./routes/dev.js";
 import { startReminderJobs } from "./utils/reminders.js";
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+
+// Prescription photos arrive as base64 text, so this route accepts a bigger body than the default
+// 100 KB. It must be registered BEFORE the global express.json() below, which would reject them.
+app.use("/api/scans", express.json({ limit: "8mb" }), scanRoutes);
+app.use("/api/scans", (err, req, res, next) => {
+  if (err.type === "entity.too.large") return res.status(413).json({ message: "The photo is too large. The limit is 4 MB." });
+  next(err);
+});
+
 app.use(express.json());
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));

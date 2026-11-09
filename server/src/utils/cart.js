@@ -27,10 +27,11 @@ export async function priceCart(patientId, items) {
   const medicines = await Medicine.find({ _id: { $in: [...quantities.keys()] } });
   if (medicines.length !== quantities.size) return { error: "Some medicines in your cart are no longer sold" };
 
-  // Names of every medicine this patient has ever been prescribed (doctor-written or uploaded)
+  // Names of every medicine a DOCTOR has prescribed to this patient. Photos the patient scanned don't
+  // count, otherwise anyone could upload any picture to unlock prescription-only medicines.
   let prescribed = new Set();
   if (medicines.some((m) => m.requiresPrescription)) {
-    const prescriptions = await Prescription.find({ patient: patientId }).select("medicines.name");
+    const prescriptions = await Prescription.find({ patient: patientId, source: "doctor" }).select("medicines.name");
     prescribed = new Set(prescriptions.flatMap((p) => p.medicines.map((m) => norm(m.name))));
   }
 

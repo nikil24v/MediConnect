@@ -12,10 +12,11 @@ const TIMES = ["morning", "afternoon", "night"];
 const populate = (q) =>
   q.populate("doctor", "name specialization").populate("patient", "name healthId age gender");
 
-// Checks the form sent by the doctor. Returns { error } or { data } with cleaned values.
-function validate(body) {
+// Checks the form sent by the doctor (or a patient saving a scanned prescription, where the
+// diagnosis is optional). Returns { error } or { data } with cleaned values.
+export function validate(body, diagnosisRequired = true) {
   const diagnosis = String(body.diagnosis || "").trim();
-  if (!diagnosis) return { error: "Diagnosis is required" };
+  if (diagnosisRequired && !diagnosis) return { error: "Diagnosis is required" };
   if (!Array.isArray(body.medicines) || body.medicines.length === 0) return { error: "Add at least one medicine" };
 
   const medicines = [];

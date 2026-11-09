@@ -19,6 +19,7 @@ import Store from "./pages/patient/Store";
 import Cart from "./pages/patient/Cart";
 import Checkout from "./pages/patient/Checkout";
 import PatientOrders from "./pages/patient/Orders";
+import ScanPrescription from "./pages/patient/ScanPrescription";
 import PharmacistDashboard from "./pages/pharmacist/Dashboard";
 import PharmacistOrders from "./pages/pharmacist/Orders";
 
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/doctors" element={<Private role="patient"><Doctors /></Private>} />
         <Route path="/history" element={<Private role="patient"><History /></Private>} />
         <Route path="/health-card" element={<Private role="patient"><HealthCard /></Private>} />
+        <Route path="/scan-prescription" element={<Private role="patient"><ScanPrescription /></Private>} />
         <Route path="/store" element={<Private role="patient"><Store /></Private>} />
         <Route path="/cart" element={<Private role="patient"><Cart /></Private>} />
         <Route path="/checkout" element={<Private role="patient"><Checkout /></Private>} />

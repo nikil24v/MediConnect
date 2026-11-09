@@ -35,7 +35,9 @@ export default function History() {
         {rxs.map((rx) => (
           <div key={rx._id} className="card mb">
             <div className="flex between wrap">
-              <div className="title">{rx.doctor?.name} <span className="muted small">· {rx.doctor?.specialization}</span></div>
+              {rx.source === "uploaded"
+                ? <div className="title">Scanned prescription <span className="badge badge-brand">Uploaded by you</span></div>
+                : <div className="title">{rx.doctor?.name} <span className="muted small">· {rx.doctor?.specialization}</span></div>}
               <div className="small muted">{fmtDate(rx.createdAt)}</div>
             </div>
             <PrescriptionCard rx={rx} canDownload canBuy />
