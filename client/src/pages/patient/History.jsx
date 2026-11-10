@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { History as HistoryIcon, Trash2 } from "lucide-react";
 import api from "../../api/client";
-import { fmtDate } from "../../utils/helpers";
+import { fmtDate, symptomName } from "../../utils/helpers";
 import Empty from "../../components/Empty";
 import PrescriptionCard from "../../components/PrescriptionCard";
 
@@ -58,7 +58,7 @@ export default function History() {
             <button className="btn btn-ghost btn-sm" onClick={() => remove(p._id)} title="Delete"><Trash2 size={16} /></button>
           </div>
           <div className="chips mb">
-            {p.symptoms.map((s) => <span key={s} className="chip" style={{ cursor: "default" }}>{s.replaceAll("_", " ")}</span>)}
+            {p.symptoms.map((s) => <span key={s} className="chip" style={{ cursor: "default" }}>{symptomName(s)}</span>)}
           </div>
           {p.results.map((r) => (
             <div key={r.disease} style={{ marginBottom: 10 }}>

@@ -1,7 +1,7 @@
 """
 MediConnect ML Service (Flask) - runs on port 5001
 
-  GET  /symptoms  -> list of 132 symptoms
+  GET  /symptoms  -> list of symptoms (132 columns in the dataset, one duplicate hidden)
   GET  /metrics   -> model accuracy info
   POST /predict   -> {"symptoms": ["itching", "skin_rash"]}  ->  top 3 diseases
 
@@ -9,6 +9,7 @@ Run:  python app.py
 """
 import json
 import os
+import re
 import warnings
 
 warnings.filterwarnings("ignore")  # hide harmless library warnings
@@ -23,15 +24,27 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 model = joblib.load(os.path.join(BASE, "model", "disease_model.joblib"))
 with open(os.path.join(BASE, "model", "metadata.json")) as f:
     info = json.load(f)
-SYMPTOMS = info["symptoms"]
+SYMPTOMS = info["symptoms"]  # the exact columns the model was trained on (do not change this list)
+
+# The dataset has the column "fluid_overload" twice. pandas renamed the second one "fluid_overload.1".
+# The first copy is empty (all zeros) and the second holds the real data. The model needs both columns,
+# but people should see one "Fluid overload": show the real column, hide the empty one.
+DUPLICATE = re.compile(r"\.\d+$")  # a trailing ".1", ".2" ...
+EMPTY_COPIES = {DUPLICATE.sub("", s) for s in SYMPTOMS if DUPLICATE.search(s)}  # {"fluid_overload"}
+SHOWN = [s for s in SYMPTOMS if s not in EMPTY_COPIES]
+ALIAS = {DUPLICATE.sub("", s): s for s in SYMPTOMS if DUPLICATE.search(s)}  # "fluid_overload" -> "fluid_overload.1"
+
+
+def label(key):
+    # "skin_rash" -> "Skin rash", "fluid_overload.1" -> "Fluid overload"
+    return DUPLICATE.sub("", key).replace("_", " ").strip().capitalize()
 
 app = Flask(__name__)
 
 
 @app.get("/symptoms")
 def symptoms():
-    # "skin_rash" -> "Skin rash" for display
-    return jsonify([{"key": s, "label": s.replace("_", " ").strip().capitalize()} for s in SYMPTOMS])
+    return jsonify([{"key": s, "label": label(s)} for s in SHOWN])
 
 
 @app.get("/metrics")
@@ -42,7 +55,8 @@ def metrics():
 @app.post("/predict")
 def predict():
     chosen = (request.get_json(silent=True) or {}).get("symptoms", [])
-    chosen = [s for s in chosen if s in SYMPTOMS]
+    chosen = [ALIAS.get(s, s) for s in chosen if isinstance(s, str)]  # the hidden name still means the real column
+    chosen = list(dict.fromkeys(s for s in chosen if s in SYMPTOMS))  # valid ones only, no repeats
     if len(chosen) < 2:
         return jsonify(error="Please select at least 2 valid symptoms."), 400
 

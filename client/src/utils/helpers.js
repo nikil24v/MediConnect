@@ -39,3 +39,9 @@ export const fmtDateTime = (d) =>
 
 // Short order number shown to people, same as in the emails (#073B67)
 export const orderNo = (order) => "#" + order._id.slice(-6).toUpperCase();
+
+// A symptom key as plain words: "skin_rash" -> "skin rash", "fluid_overload.1" -> "fluid overload"
+export const symptomName = (key) => String(key).replace(/\.\d+$/, "").replaceAll("_", " ");
+
+// A medicine with this many units or fewer is "low stock" (pharmacist dashboard and inventory page)
+export const LOW_STOCK = 20;
