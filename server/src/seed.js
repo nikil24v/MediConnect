@@ -1,4 +1,4 @@
-// Adds demo doctors + a demo patient so the app isn't empty.  Run: npm run seed
+// Adds 4 demo doctors, 3 demo patients, 1 pharmacist and the medicine store so the app isn't empty.  Run: npm run seed
 import "dotenv/config";
 import mongoose from "mongoose";
 import User from "./models/User.js";
@@ -43,12 +43,14 @@ const doctors = [
   { name: "Dr. Arun Kumar", specialization: "General Physician", experience: 8, fee: 400 },
   { name: "Dr. Atkshaya", specialization: "Cardiologist", experience: 12, fee: 800 },
   { name: "Dr. Priya", specialization: "Dermatologist", experience: 6, fee: 500 },
-  { name: "Dr. Suresh", specialization: "Gastroenterologist", experience: 10, fee: 700 },
   { name: "Dr. Divya", specialization: "Neurologist", experience: 15, fee: 900 },
-  { name: "Dr. Ramesh", specialization: "Pulmonologist", experience: 9, fee: 650 },
-  { name: "Dr. Lakshmi", specialization: "Endocrinologist", experience: 11, fee: 750 },
-  { name: "Dr. Vignesh", specialization: "Orthopedic", experience: 7, fee: 600 },
-  { name: "Dr. Anitha", specialization: "Urologist", experience: 9, fee: 650 },
+];
+
+// Three demo patients (all use the password patient123)
+const patients = [
+  { name: "Demo Patient", email: "patient@mediconnect.com", age: 25, gender: "male" },
+  { name: "Ravi Kumar", email: "ravi@mediconnect.com", age: 34, gender: "male" },
+  { name: "Sneha Rao", email: "sneha@mediconnect.com", age: 29, gender: "female" },
 ];
 
 await mongoose.connect(process.env.MONGO_URI);
@@ -60,8 +62,17 @@ for (const [i, d] of doctors.entries()) {
   if (existing) await User.updateOne({ _id: existing._id }, { $set: { ...d, email } }); // update if changed
   else await User.create({ ...d, email, password: "doctor123", role: "doctor", phone: "98400000" + (10 + i) });
 }
-if (!(await User.findOne({ email: "patient@mediconnect.com" })))
-  await User.create({ name: "Demo Patient", email: "patient@mediconnect.com", password: "patient123", role: "patient", age: 25, gender: "male" });
+for (const p of patients)
+  if (!(await User.findOne({ email: p.email })))
+    await User.create({ ...p, password: "patient123", role: "patient" });
+
+// Patients created before the short Health IDs get one now. Their old long ID is kept so cards already
+// downloaded still open. Patients that already have a short ID are left alone.
+for (const p of await User.find({ role: "patient", healthId: { $exists: true, $not: /^MC-\d{2}-/ } })) {
+  p.legacyHealthId = p.healthId;
+  p.healthId = undefined; // the save below creates the new one
+  await p.save();
+}
 
 
 // The pharmacist (pharmacists can't register themselves; they are created here)
