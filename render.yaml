@@ -9,7 +9,9 @@ services:
     runtime: node
     rootDir: server
     plan: free
-    buildCommand: npm install
+    # "npm run seed" fills the Atlas database (demo accounts and the medicine store) on every deploy.
+    # It only adds or updates: it never deletes users, appointments or orders and keeps the stock that was set.
+    buildCommand: npm install && npm run seed
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:

@@ -143,12 +143,10 @@ The frontend has one optional variable, `VITE_API_URL` (default `http://localhos
 2. **Create a free MongoDB Atlas database** (Render cannot reach a database on your own computer):
    Database Access → add a user with read/write rights · Network Access → allow `0.0.0.0/0` (Render has no fixed address) ·
    Connect → Drivers → copy the `mongodb+srv://...` string and add `/mediconnect` before the `?`.
-3. **Fill the Atlas database once** from your computer (adds the demo accounts and the medicine store):
-   ```powershell
-   cd server
-   $env:MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/mediconnect?retryWrites=true&w=majority"
-   npm run seed
-   ```
+3. **The database fills itself:** the API's build command runs `npm run seed` on Render, which adds the demo accounts and the
+   medicine store (it never deletes anything, so it is safe on every deploy). You do not have to do this by hand. If you ever want to
+   run it from your own computer, set `MONGO_URI` in that terminal and run `npm run seed` in `server/`, but some networks
+   (colleges, offices) block the MongoDB port 27017, in which case use the Render build instead.
 4. **On Render:** New → **Blueprint** → choose this repository. Render reads `render.yaml` and asks for the values marked
    `sync: false`. Enter your Atlas string for `MONGO_URI` and your Gemini key for `GEMINI_API_KEY`. For `CLIENT_URL`, `ML_URL`
    and `VITE_API_URL` type any temporary text, because the real addresses do not exist yet.
