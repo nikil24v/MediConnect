@@ -12,7 +12,7 @@ function Tags({ items, className }) {
 // Shows a patient's health details and past visits.
 // Used on the patient's Health Card page AND on the doctor's patient-record page.
 // canDownload / canBuy = show "Download PDF" / "Buy medicines" (only for the patient's own card).
-export default function RecordView({ patient, visits, canDownload, canBuy }) {
+export default function RecordView({ patient, visits, uploaded = [], canDownload, canBuy }) {
   return (
     <>
       <div className="card mb">
@@ -53,6 +53,21 @@ export default function RecordView({ patient, visits, canDownload, canBuy }) {
           ))
         )}
       </div>
+
+      {uploaded.length > 0 && (
+        <div className="card mt">
+          <div className="card-title">Prescriptions uploaded by the patient</div>
+          <p className="muted small mb">Scanned from paper prescriptions by the patient. They are not linked to a visit here.</p>
+          {uploaded.map((rx) => (
+            <div key={rx._id} className="list-item">
+              <div className="grow">
+                <div className="title">Added on {fmtDate(rx.createdAt)} <span className="badge badge-brand">Uploaded by patient</span></div>
+                <PrescriptionCard rx={rx} canDownload={canDownload} canBuy={canBuy} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

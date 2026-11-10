@@ -27,7 +27,7 @@ export default function PatientRecord() {
     );
   if (!data) return <div className="loader"><div className="spinner" /></div>;
 
-  const { patient, visits } = data;
+  const { patient, visits, uploaded } = data;
   return (
     <>
       <div className="card mb flex">
@@ -37,7 +37,7 @@ export default function PatientRecord() {
           <div className="small muted" style={{ fontFamily: "monospace" }}>Health ID: {patient.healthId}</div>
         </div>
       </div>
-      <RecordView patient={patient} visits={visits} />
+      <RecordView patient={patient} visits={visits} uploaded={uploaded} />
     </>
   );
 }

@@ -62,11 +62,11 @@ export default function HealthCard() {
   if (error) return <div className="alert alert-error">{error}</div>;
   if (!data) return <div className="loader"><div className="spinner" /></div>;
 
-  const { patient, scanUrl, visits } = data;
+  const { patient, scanUrl, visits, uploaded } = data;
   const noDetails = !patient.bloodGroup && !patient.allergies.length && !patient.conditions.length;
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: "minmax(0, 320px) minmax(0, 1fr)", alignItems: "start" }}>
+    <div className="grid side-grid">
       <div className="card" style={{ textAlign: "center" }}>
         <div className="card-title">{patient.name}</div>
         <div ref={qrBox} style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 12 }}>
@@ -84,7 +84,7 @@ export default function HealthCard() {
             <QrCode size={18} /> Your card is empty. <Link to="/profile">Add your blood group, allergies and conditions</Link> so doctors can see them.
           </div>
         )}
-        <RecordView patient={patient} visits={visits} canDownload canBuy />
+        <RecordView patient={patient} visits={visits} uploaded={uploaded} canDownload canBuy />
       </div>
     </div>
   );
