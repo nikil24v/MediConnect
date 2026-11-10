@@ -37,6 +37,17 @@ const medicines = [
   ["Amlodipine", "Diabetes & Heart", 32, 120, true, "Strip of 15 tablets"],
   ["Atorvastatin", "Diabetes & Heart", 90, 100, true, "Strip of 15 tablets"],
   ["Antiseptic Liquid", "First Aid & Skin", 70, 100, false, "100 ml bottle"],
+  // Skin care (the names match what doctors usually write, e.g. "Clotrimazole Cream 1%")
+  ["Clotrimazole Cream 1%", "Skin Care", 65, 120, false, "15 g tube"],
+  ["Terbinafine Cream 1%", "Skin Care", 110, 80, false, "10 g tube"],
+  ["Ketoconazole Shampoo 2%", "Skin Care", 180, 60, false, "100 ml bottle"],
+  ["Calamine Lotion", "Skin Care", 70, 90, false, "100 ml bottle"],
+  ["Benzoyl Peroxide Gel 2.5%", "Skin Care", 95, 70, false, "20 g tube"],
+  ["Moisturising Lotion", "Skin Care", 220, 70, false, "200 ml bottle"],
+  ["Hydrocortisone Cream 1%", "Skin Care", 80, 70, true, "15 g tube"],
+  ["Betamethasone Cream", "Skin Care", 75, 60, true, "20 g tube"],
+  ["Mupirocin Ointment 2%", "Skin Care", 130, 60, true, "5 g tube"],
+  ["Fusidic Acid Cream 2%", "Skin Care", 150, 50, true, "10 g tube"],
 ];
 
 const doctors = [
