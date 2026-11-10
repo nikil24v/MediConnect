@@ -48,7 +48,12 @@ router.get("/me", protect, allow("patient"), async (req, res) => {
 
 // GET /api/records/:healthId  -> a doctor looks up a patient by the ID on the card
 router.get("/:healthId", protect, allow("doctor"), async (req, res) => {
-  const patient = await User.findOne({ healthId: req.params.healthId, role: "patient" });
+  // Typing in small letters is fine. The old long ID of earlier cards still works too.
+  const typed = String(req.params.healthId).trim();
+  const patient = await User.findOne({
+    role: "patient",
+    $or: [{ healthId: { $in: [typed, typed.toUpperCase()] } }, { legacyHealthId: typed }],
+  });
   if (!patient) return res.status(404).json({ message: "No patient found with this Health ID" });
 
   res.json({ patient: pickPatient(patient), visits: await pastVisits(patient._id) });

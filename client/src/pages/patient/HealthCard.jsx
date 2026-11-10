@@ -44,10 +44,13 @@ export default function HealthCard() {
     ctx.fillText(`Emergency: ${cut(p.emergencyContact || "-")}`, 30, 300);
 
     ctx.drawImage(qr, 560, 100, 210, 210);
-    ctx.font = "12px monospace";
-    ctx.fillStyle = "#64748b";
-    ctx.fillText(p.healthId, 500, 335);
+    ctx.fillStyle = "#0f172a";
+    ctx.textAlign = "center"; // the short ID sits centred under the QR code
+    ctx.font = "bold 22px monospace";
+    ctx.fillText(p.healthId, 665, 345);
+    ctx.textAlign = "left";
     ctx.font = "16px sans-serif";
+    ctx.fillStyle = "#64748b";
     ctx.fillText("Doctors: scan the QR code or enter the Health ID above.", 30, 420);
 
     const link = document.createElement("a");
@@ -70,7 +73,7 @@ export default function HealthCard() {
           <QRCodeCanvas value={scanUrl} size={210} level="M" />
         </div>
         <div className="small muted mt">Health ID</div>
-        <div className="small" style={{ wordBreak: "break-all", fontFamily: "monospace" }}>{patient.healthId}</div>
+        <div style={{ fontFamily: "monospace", fontSize: 22, fontWeight: 700, letterSpacing: 1 }}>{patient.healthId}</div>
         <button className="btn btn-primary btn-block mt" onClick={download}><Download size={16} /> Download card</button>
         <p className="small muted mt">Show this QR code to any doctor so they can see your health record.</p>
       </div>

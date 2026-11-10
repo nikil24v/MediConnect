@@ -28,9 +28,10 @@ export function buildPrescriptionPdf(rx) {
   doc.fillColor(MUTED).fontSize(9).text("PATIENT", 320, top);
   doc.fillColor("#000").font("Helvetica-Bold").fontSize(13).text(rx.patient?.name || "", 320, top + 14);
   doc.font("Helvetica").fontSize(10).fillColor(MUTED);
-  doc.text(`Age / Gender: ${rx.patient?.age || "-"} / ${rx.patient?.gender || "-"}`, 320, top + 32);
-  doc.text("Health ID:", 320, top + 47);
-  doc.font("Courier").fontSize(9).text(rx.patient?.healthId || "-", 320, top + 60, { width: 225 }); // long ID gets its own line
+  doc.text(`Age / Gender: ${rx.patient?.age || "-"} / ${rx.patient?.gender ? cap(rx.patient.gender) : "-"}`, 320, top + 32);
+  doc.text("Health ID: ", 320, top + 47, { continued: true });
+  doc.font("Courier-Bold").fillColor("#000").text(rx.patient?.healthId || "-");
+  doc.font("Helvetica"); // back to the normal font for the rest of the page
 
   // ---- Diagnosis ----
   let y = 195;

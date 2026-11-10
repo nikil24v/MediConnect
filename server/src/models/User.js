@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
+
+// Health ID such as "MC-26-7K4P9Q": MC + the year + 6 random characters. Easy to read out loud
+// (no 0/O or 1/I) but still impossible to guess one after another, unlike a running number.
+const ID_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // exactly 32 characters
+const newHealthId = () =>
+  `MC-${String(new Date().getFullYear()).slice(-2)}-${[...randomBytes(6)].map((b) => ID_CHARS[b % 32]).join("")}`;
 
 const userSchema = new mongoose.Schema(
   {
@@ -28,13 +34,20 @@ const userSchema = new mongoose.Schema(
     notifyFamily: { type: Boolean, default: false }, // "Send reminders to family" switch
     // Unique ID printed on the health card QR (sparse = doctors don't need one)
     healthId: { type: String, unique: true, sparse: true },
+    // The old long ID of patients created before the short IDs, so cards already downloaded keep working
+    legacyHealthId: { type: String, unique: true, sparse: true, select: false },
   },
   { timestamps: true }
 );
 
-// Every patient gets a random health ID the first time they are saved
-userSchema.pre("save", function () {
-  if (this.role === "patient" && !this.healthId) this.healthId = randomUUID();
+// Every patient gets a Health ID the first time they are saved (tries again in the very unlikely case it is taken)
+userSchema.pre("save", async function () {
+  if (this.role !== "patient" || this.healthId) return;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = newHealthId();
+    if (!(await this.constructor.exists({ healthId: id }))) return void (this.healthId = id);
+  }
+  throw new Error("Could not create a Health ID. Please try again.");
 });
 
 // Hash the password before saving (never store plain passwords)

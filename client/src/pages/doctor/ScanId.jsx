@@ -20,7 +20,7 @@ export default function ScanId() {
       </p>
       <div className="field">
         <label>Health ID</label>
-        <input className="input" value={id} onChange={(e) => setId(e.target.value)} placeholder="e.g. 3f2b8c1e-...." required />
+        <input className="input" value={id} onChange={(e) => setId(e.target.value)} placeholder="e.g. MC-26-7K4P9Q" required autoCapitalize="characters" />
       </div>
       <button className="btn btn-primary"><ScanLine size={16} /> Open record</button>
     </form>
