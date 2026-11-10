@@ -5,7 +5,8 @@ MediConnect ML Service (Flask) - runs on port 5001
   GET  /metrics   -> model accuracy info
   POST /predict   -> {"symptoms": ["itching", "skin_rash"]}  ->  top 3 diseases
 
-Run:  python app.py
+Run on your computer:  python app.py
+Run in production:    gunicorn app:app --bind 0.0.0.0:$PORT
 """
 import json
 import os
@@ -76,4 +77,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(port=5001)
+    app.run(port=int(os.environ.get("PORT", 5001)))  # the hosting service tells us the port through PORT
