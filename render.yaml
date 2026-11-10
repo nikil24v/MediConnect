@@ -1,0 +1,63 @@
+# Render Blueprint: creates the three parts of MediConnect from this repository.
+# Steps are in the README ("Deploy on Render"). Values marked "sync: false" are asked for in the Render
+# dashboard, so passwords and keys are never stored in this file.
+
+services:
+  # 1. The API (Node + Express)
+  - type: web
+    name: mediconnect-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true # Render makes a long random secret
+      - key: MONGO_URI
+        sync: false # your MongoDB Atlas connection string
+      - key: CLIENT_URL
+        sync: false # the website address, e.g. https://mediconnect-web.onrender.com (no slash at the end)
+      - key: ML_URL
+        sync: false # the ML service address, e.g. https://mediconnect-ml.onrender.com
+      - key: GEMINI_API_KEY
+        sync: false # for the prescription scanner (optional)
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
+      # EMAIL_USER / EMAIL_PASS are left out: free Render services cannot send e-mail through Gmail (SMTP ports are blocked).
+
+  # 2. The symptom checker (Python + Flask, served by gunicorn)
+  - type: web
+    name: mediconnect-ml
+    runtime: python
+    rootDir: ml-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    healthCheckPath: /metrics
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+
+  # 3. The website (React, built once and served as static files)
+  - type: web
+    name: mediconnect-web
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: VITE_API_URL
+        sync: false # the API address plus /api, e.g. https://mediconnect-api.onrender.com/api
+    routes:
+      # Any page address (for example /dashboard) must open the app instead of a "not found" page
+      - type: rewrite
+        source: /*
+        destination: /index.html

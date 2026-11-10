@@ -134,6 +134,40 @@ The frontend has one optional variable, `VITE_API_URL` (default `http://localhos
 - A scanned photo is checked by its real file type and size, and the AI key is only ever used on the server
 - In production the server never sends technical error text to the browser (it is logged on the server instead)
 
+## Deploy on Render
+
+`render.yaml` describes the three services: **mediconnect-api** (Node), **mediconnect-ml** (Python) and
+**mediconnect-web** (static React build). Render's free plan is enough.
+
+1. **Push the code to GitHub.**
+2. **Create a free MongoDB Atlas database** (Render cannot reach a database on your own computer):
+   Database Access → add a user with read/write rights · Network Access → allow `0.0.0.0/0` (Render has no fixed address) ·
+   Connect → Drivers → copy the `mongodb+srv://...` string and add `/mediconnect` before the `?`.
+3. **Fill the Atlas database once** from your computer (adds the demo accounts and the medicine store):
+   ```powershell
+   cd server
+   $env:MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/mediconnect?retryWrites=true&w=majority"
+   npm run seed
+   ```
+4. **On Render:** New → **Blueprint** → choose this repository. Render reads `render.yaml` and asks for the values marked
+   `sync: false`. Enter your Atlas string for `MONGO_URI` and your Gemini key for `GEMINI_API_KEY`. For `CLIENT_URL`, `ML_URL`
+   and `VITE_API_URL` type any temporary text, because the real addresses do not exist yet.
+5. **When the three services have deployed**, open each one and copy its address (`https://....onrender.com`). Render adds a
+   suffix if a name is taken, so always use the address it shows. Then set:
+   - API service → `CLIENT_URL` = the website address and `ML_URL` = the ML service address (no `/` at the end)
+   - Website service → `VITE_API_URL` = the API address **plus `/api`**
+
+   Each change redeploys that service automatically.
+6. Open the website address and log in with a demo account.
+
+Things to know about the free plan:
+- A service that has not been used for about 15 minutes **goes to sleep**. The first request afterwards takes 30 to 60 seconds.
+  Before a demo, open `https://<api address>/api/health` and `https://<ml address>/metrics` once to wake them up.
+- Scheduled medicine reminders only run while the API is awake.
+- Free services **cannot send e-mail through Gmail** (Render blocks the SMTP ports), so leave `EMAIL_USER` and `EMAIL_PASS` out.
+  The app works without them and logs a warning. A paid instance, or an e-mail service that works over HTTPS, is needed for e-mail.
+- Without Razorpay keys checkout uses the labelled "Test payment" button.
+
 ## API summary
 
 | Method        | Route                                 | Who        | Purpose                                         |
