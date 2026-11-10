@@ -22,6 +22,7 @@ import PatientOrders from "./pages/patient/Orders";
 import ScanPrescription from "./pages/patient/ScanPrescription";
 import PharmacistDashboard from "./pages/pharmacist/Dashboard";
 import PharmacistOrders from "./pages/pharmacist/Orders";
+import Inventory from "./pages/pharmacist/Inventory";
 
 // Only lets logged-in users (optionally of a given role) see the page
 function Private({ role, children }) {
@@ -72,6 +73,7 @@ export default function App() {
         <Route path="/cart" element={<Private role="patient"><Cart /></Private>} />
         <Route path="/checkout" element={<Private role="patient"><Checkout /></Private>} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/inventory" element={<Private role="pharmacist"><Inventory /></Private>} />
         <Route path="/scan" element={<Private role="doctor"><ScanId /></Private>} />
         <Route path="/scan/:healthId" element={<Private role="doctor"><PatientRecord /></Private>} />
       </Route>

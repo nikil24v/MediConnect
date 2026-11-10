@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Stethoscope, Users, CalendarDays, History, UserCircle, LogOut, Menu, QrCode, ScanLine,
-  Store, ShoppingCart, Package, ScanText,
+  Store, ShoppingCart, Package, ScanText, Boxes,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
@@ -24,6 +24,7 @@ const PATIENT_NAV = [
 const PHARMACIST_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/orders", label: "Orders", icon: Package },
+  { to: "/inventory", label: "Inventory", icon: Boxes },
 ];
 const DOCTOR_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,7 +35,7 @@ const TITLES = {
   "/dashboard": "Dashboard", "/symptom-checker": "AI Symptom Checker", "/doctors": "Find Doctors",
   "/appointments": "Appointments", "/history": "Health History", "/profile": "My Profile",
   "/health-card": "My Health Card", "/scan": "Scan Health ID",
-  "/scan-prescription": "Scan Prescription", "/store": "Medicine Store", "/cart": "My Cart", "/checkout": "Checkout",
+  "/scan-prescription": "Scan Prescription", "/store": "Medicine Store", "/cart": "My Cart", "/checkout": "Checkout", "/inventory": "Inventory",
 };
 const NAV_BY_ROLE = { patient: PATIENT_NAV, doctor: DOCTOR_NAV, pharmacist: PHARMACIST_NAV };
 

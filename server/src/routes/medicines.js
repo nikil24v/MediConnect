@@ -1,4 +1,5 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import Medicine from "../models/Medicine.js";
 import { protect, allow } from "../middleware/auth.js";
 import { norm } from "../utils/cart.js";
@@ -13,12 +14,25 @@ router.get("/", protect, async (req, res) => {
   if (req.query.search) filter.name = { $regex: escapeRegex(String(req.query.search)), $options: "i" };
   if (req.query.category) filter.category = String(req.query.category);
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 0, 0), 50);
-  res.json(await Medicine.find(filter).sort({ name: 1 }).limit(limit)); // limit(0) = no limit
+  // The collation makes the sort ignore capital letters: "Omeprazole" comes before "ORS Sachet" (strength 2 = letters only, no case)
+  res.json(await Medicine.find(filter).collation({ locale: "en", strength: 2 }).sort({ name: 1 }).limit(limit)); // limit(0) = no limit
 });
 
 // GET /api/medicines/categories  -> for the filter chips
 router.get("/categories", protect, async (req, res) => {
-  res.json((await Medicine.distinct("category")).sort());
+  res.json((await Medicine.distinct("category")).sort((a, b) => a.localeCompare(b)));
+});
+
+// PATCH /api/medicines/:id/stock  { stock: 120 }  -> the pharmacist sets how many units are in stock
+router.patch("/:id/stock", protect, allow("pharmacist"), async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: "Invalid medicine id" });
+  const stock = Number(req.body.stock);
+  if (req.body.stock === "" || req.body.stock === null || !Number.isInteger(stock) || stock < 0 || stock > 100000)
+    return res.status(400).json({ message: "Stock must be a whole number from 0 to 100000" });
+
+  const medicine = await Medicine.findByIdAndUpdate(req.params.id, { stock }, { new: true });
+  if (!medicine) return res.status(404).json({ message: "Medicine not found" });
+  res.json(medicine);
 });
 
 // POST /api/medicines/match  { items: [{ medicine: "<store id>", name: "Cetirizine" }, { name: "Rare Drug" }] }

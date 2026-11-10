@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { PackagePlus, PackageCheck, Truck, CheckCircle2, Package } from "lucide-react";
 import api from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
-import { fmtDateTime, orderNo, rupees } from "../../utils/helpers";
+import { fmtDateTime, orderNo, rupees, LOW_STOCK } from "../../utils/helpers";
 import Empty from "../../components/Empty";
 
 export default function PharmacistDashboard() {
@@ -13,7 +13,7 @@ export default function PharmacistDashboard() {
 
   useEffect(() => {
     api.get("/orders").then((r) => setOrders(r.data)).catch(() => {});
-    api.get("/medicines").then((r) => setLowStock(r.data.filter((m) => m.stock <= 10))).catch(() => {});
+    api.get("/medicines").then((r) => setLowStock(r.data.filter((m) => m.stock <= LOW_STOCK))).catch(() => {});
   }, []);
 
   const count = (status) => orders.filter((o) => o.status === status).length;
@@ -30,7 +30,7 @@ export default function PharmacistDashboard() {
       <div className="card welcome mb">
         <h2>Hello, {user.name} 💊</h2>
         <p>{newOrders.length} new order{newOrders.length !== 1 && "s"} waiting to be packed.</p>
-        <div className="mt"><Link to="/orders" className="btn btn-outline">Manage orders</Link></div>
+        <div className="mt flex wrap"><Link to="/orders" className="btn btn-outline">Manage orders</Link><Link to="/inventory" className="btn btn-outline">Manage stock</Link></div>
       </div>
 
       <div className="grid grid-4 mb">
@@ -56,7 +56,7 @@ export default function PharmacistDashboard() {
           )) : <Empty icon={Package} title="No new orders" />}
         </div>
         <div className="card">
-          <div className="card-title">Low stock (10 or fewer)</div>
+          <div className="card-title">Low stock ({LOW_STOCK} or fewer) <Link to="/inventory" className="small" style={{ color: "var(--brand)" }}>Manage stock</Link></div>
           {lowStock.length ? lowStock.map((m) => (
             <div key={m._id} className="list-item">
               <div className="grow title">{m.name}</div>
