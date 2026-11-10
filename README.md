@@ -17,8 +17,8 @@ prescriptions. The pharmacist packs and ships the orders and keeps the stock up 
 - **Health Card:** personal QR code and a short Health ID such as `MC-26-7K4P9Q`, downloadable as an image
 - **Digital prescriptions:** written by the doctor, shown in Health History and downloadable as a **PDF**
 - **AI prescription scanner:** upload a photo of a paper prescription, the AI (Google Gemini) reads the medicines, the patient checks and edits them, then saves
-- **Medicine store:** search, cart, checkout with a test payment (or Razorpay test mode), order tracking (placed, packed, shipped, delivered). Prescription-only medicines are sold only against a doctor's prescription
-- **Emails:** order confirmation and delivery, visit summary after each consultation, and medicine reminders at 8:00, 13:00 and 20:00. A family member can receive the visit summaries and reminders too
+- **Medicine store:** search, cart, checkout with a built-in test payment (no real money), order tracking (placed, packed, shipped, delivered). Prescription-only medicines are sold only against a doctor's prescription
+- **Emails:** order confirmation and delivery, and visit summary after each consultation. A family member can receive the visit summaries too
 
 **Doctor**
 - Dashboard with today's visits and pending requests
@@ -40,7 +40,7 @@ prescriptions. The pharmacist packs and ships the orders and keeps the stock up 
 | `ml-service/` | Python: dataset, Random Forest training, Flask prediction API                |
 
 Browser → React (`:5173`) → Express API (`:5000`) → MongoDB, and the API calls the ML service (`:5001`).
-The Gemini API (scanner), Gmail (emails) and Razorpay (payments) are optional and only used when configured.
+The Gemini API (scanner) and Gmail (emails) are optional and only used when configured.
 
 ## Machine Learning (`ml-service`)
 
@@ -114,9 +114,8 @@ New accounts need a password of at least 8 characters and a 10-digit phone numbe
 | `PORT`                                | optional | API port (default 5000)                                                 |
 | `ML_URL`                              | optional | Address of the ML service (default `http://localhost:5001`)             |
 | `CLIENT_URL`                          | optional | Address of the website, used for CORS and the QR link                   |
-| `NODE_ENV`                            | optional | `production` hides the demo routes and technical error messages         |
+| `NODE_ENV`                            | optional | `production` hides technical error messages                             |
 | `EMAIL_USER`, `EMAIL_PASS`            | optional | Gmail address and Gmail **App Password**. Without them emails are only printed in the server console |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | optional | Razorpay **test** keys. Without them checkout uses a labelled "Test payment" button |
 | `GEMINI_API_KEY`, `GEMINI_MODEL`      | optional | Google Gemini key for the prescription scanner. Without it the scanner says it is not configured |
 
 The frontend has one optional variable, `VITE_API_URL` (default `http://localhost:5000/api`), see `client/.env.example`.
@@ -133,38 +132,6 @@ The frontend has one optional variable, `VITE_API_URL` (default `http://localhos
 - Prescription-only medicines are checked on the server against the patient's prescriptions from a doctor
 - A scanned photo is checked by its real file type and size, and the AI key is only ever used on the server
 - In production the server never sends technical error text to the browser (it is logged on the server instead)
-
-## Deploy on Render
-
-`render.yaml` describes the three services: **mediconnect-api** (Node), **mediconnect-ml** (Python) and
-**mediconnect-web** (static React build). Render's free plan is enough.
-
-1. **Push the code to GitHub.**
-2. **Create a free MongoDB Atlas database** (Render cannot reach a database on your own computer):
-   Database Access → add a user with read/write rights · Network Access → allow `0.0.0.0/0` (Render has no fixed address) ·
-   Connect → Drivers → copy the `mongodb+srv://...` string and add `/mediconnect` before the `?`.
-3. **The database fills itself:** the API's build command runs `npm run seed` on Render, which adds the demo accounts and the
-   medicine store (it never deletes anything, so it is safe on every deploy). You do not have to do this by hand. If you ever want to
-   run it from your own computer, set `MONGO_URI` in that terminal and run `npm run seed` in `server/`, but some networks
-   (colleges, offices) block the MongoDB port 27017, in which case use the Render build instead.
-4. **On Render:** New → **Blueprint** → choose this repository. Render reads `render.yaml` and asks for the values marked
-   `sync: false`. Enter your Atlas string for `MONGO_URI` and your Gemini key for `GEMINI_API_KEY`. For `CLIENT_URL`, `ML_URL`
-   and `VITE_API_URL` type any temporary text, because the real addresses do not exist yet.
-5. **When the three services have deployed**, open each one and copy its address (`https://....onrender.com`). Render adds a
-   suffix if a name is taken, so always use the address it shows. Then set:
-   - API service → `CLIENT_URL` = the website address and `ML_URL` = the ML service address (no `/` at the end)
-   - Website service → `VITE_API_URL` = the API address **plus `/api`**
-
-   Each change redeploys that service automatically.
-6. Open the website address and log in with a demo account.
-
-Things to know about the free plan:
-- A service that has not been used for about 15 minutes **goes to sleep**. The first request afterwards takes 30 to 60 seconds.
-  Before a demo, open `https://<api address>/api/health` and `https://<ml address>/metrics` once to wake them up.
-- Scheduled medicine reminders only run while the API is awake.
-- Free services **cannot send e-mail through Gmail** (Render blocks the SMTP ports), so leave `EMAIL_USER` and `EMAIL_PASS` out.
-  The app works without them and logs a warning. A paid instance, or an e-mail service that works over HTTPS, is needed for e-mail.
-- Without Razorpay keys checkout uses the labelled "Test payment" button.
 
 ## API summary
 
@@ -190,11 +157,9 @@ Things to know about the free plan:
 | GET           | `/api/medicines`, `/categories`       | any        | Store catalogue (search, category, case-insensitive sort) |
 | POST          | `/api/medicines/match`                | patient    | Find prescription medicines in the store        |
 | PATCH         | `/api/medicines/:id/stock`            | pharmacist | Set the stock of a medicine                     |
-| POST          | `/api/orders/preview`, `/api/orders/pay`, `/api/orders` | patient | Check the cart, start the payment, place the order |
-| GET           | `/api/orders/payment-config`          | patient    | Which payment button to show (test or Razorpay) |
+| POST          | `/api/orders/preview`, `/api/orders/pay`, `/api/orders` | patient | Check the cart, check the address, place the order (test payment) |
 | GET           | `/api/orders`                         | patient, pharmacist | My orders / all orders                 |
 | POST          | `/api/orders/:id/advance`             | pharmacist | Move an order to its next status                |
-| GET           | `/api/dev/...`                        | this computer only | Demo helpers (trigger reminders, preview e-mails). Off in production |
 
 ## Future work
 

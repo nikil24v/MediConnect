@@ -1,7 +1,7 @@
 // Reads a prescription photo with Google Gemini (vision) and returns the medicines as clean JSON.
 // One AI call does both jobs: reading the text (OCR) and picking out name / dosage / frequency / duration.
 
-const TIMES = ["morning", "afternoon", "night"]; // same values the reminders use
+const TIMES = ["morning", "afternoon", "night"]; // same values a prescription uses for when to take a medicine
 
 const PROMPT = `You are reading a photo of a medical prescription (printed or handwritten).
 Extract every prescribed medicine.

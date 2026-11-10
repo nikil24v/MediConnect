@@ -1,8 +1,7 @@
 import nodemailer from "nodemailer";
 
 // Sends one email through Gmail SMTP (EMAIL_USER + EMAIL_PASS = a Gmail "app password").
-// If those are missing, the email is NOT sent: it is printed to the console and kept in
-// `outbox` so you can preview it in the browser during a demo (dev route only).
+// If those are missing, the email is NOT sent: a warning is printed to the console instead.
 // This function never throws, so a mail problem can never break the app.
 
 const mailConfigured = () => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
@@ -20,16 +19,12 @@ const getTransporter = () => {
   return transporter;
 };
 
-export const outbox = []; // newest first, only used when email is not configured
-
 export async function sendMail({ to, subject, html }) {
   const recipients = [].concat(to).filter(Boolean);
   if (recipients.length === 0) return { ok: false, mode: "none" };
 
   if (!mailConfigured()) {
     console.warn(`[email] NOT SENT (EMAIL_USER / EMAIL_PASS are missing in server/.env) to: ${recipients.join(", ")} | subject: "${subject}"`);
-    outbox.unshift({ to: recipients, subject, html, at: new Date() });
-    outbox.length = Math.min(outbox.length, 20);
     return { ok: true, mode: "console" };
   }
 

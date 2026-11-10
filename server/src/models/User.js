@@ -31,12 +31,12 @@ const userSchema = new mongoose.Schema(
     allergies: { type: [String], default: [] },
     conditions: { type: [String], default: [] },
     emergencyContact: { type: String, default: "" },
-    // Optional: a family member who also gets visit summaries and medicine reminders
+    // Optional: a family member who also gets visit summaries
     familyEmail: {
       type: String, default: "", trim: true, lowercase: true,
       validate: { validator: (v) => !v || /^\S+@\S+\.\S+$/.test(v), message: "Family email is not valid" },
     },
-    notifyFamily: { type: Boolean, default: false }, // "Send reminders to family" switch
+    notifyFamily: { type: Boolean, default: false }, // "Send visit summaries to family" switch
     // Unique ID printed on the health card QR (sparse = doctors don't need one)
     healthId: { type: String, unique: true, sparse: true },
     // The old long ID of patients created before the short IDs, so cards already downloaded keep working

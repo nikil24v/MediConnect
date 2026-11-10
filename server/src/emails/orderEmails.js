@@ -26,7 +26,7 @@ export function orderPlacedEmail(order) {
     ${itemsTable(order)}
     <p style="margin:12px 0 4px;color:#64748b;font-size:12px">DELIVERY ADDRESS</p>
     <p style="margin:0">${esc(a.fullName)}, ${esc(a.phone)}<br>${esc(a.line)} - ${esc(a.pincode)}</p>
-    <p style="margin:12px 0 0;font-size:13px;color:#64748b">Payment: ${order.paymentMode === "test" ? "TEST payment (no real money)" : "Razorpay"} &middot; ${esc(order.paymentId)}</p>
+    <p style="margin:12px 0 0;font-size:13px;color:#64748b">Payment: TEST payment (no real money) &middot; ${esc(order.paymentId)}</p>
   `;
   return { subject: `Order ${orderNo(order)} placed`, html: layout("Order placed", body) };
 }

@@ -92,8 +92,8 @@ export default function Profile() {
             <label className="flex mb" style={{ gap: 10, cursor: "pointer" }}>
               <input type="checkbox" checked={health.notifyFamily} onChange={(e) => setHealth({ ...health, notifyFamily: e.target.checked })} />
               <span>
-                <strong className="small">Send reminders to family</strong>
-                <span className="muted small" style={{ display: "block" }}>Your family email also gets your visit summaries and medicine reminders.</span>
+                <strong className="small">Send visit summaries to family</strong>
+                <span className="muted small" style={{ display: "block" }}>Your family email also gets your visit summaries.</span>
               </span>
             </label>
           </>

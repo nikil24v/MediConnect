@@ -5,7 +5,7 @@ import { visitSummaryEmail } from "../emails/visitSummary.js";
 import { orderPlacedEmail, orderDeliveredEmail } from "../emails/orderEmails.js";
 
 // Who should get an email about this patient: the patient, plus the family
-// member if the patient turned "Send reminders to family" on.
+// member if the patient turned "Send visit summaries to family" on.
 export function recipientsFor(patient) {
   const list = [patient.email];
   if (patient.notifyFamily && patient.familyEmail) list.push(patient.familyEmail);

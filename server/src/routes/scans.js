@@ -53,7 +53,7 @@ router.post("/", protect, allow("patient"), async (req, res) => {
 });
 
 // POST /api/scans/save  { diagnosis, notes, medicines: [...] }  -> the patient confirmed the reviewed list.
-// Saved like any prescription (source "uploaded"), so it shows in Health History and the daily reminders use it.
+// Saved like any prescription (source "uploaded"), so it shows in Health History.
 router.post("/save", protect, allow("patient"), async (req, res) => {
   const { error, data } = validate(req.body, false); // same checks as a doctor's prescription, diagnosis is optional
   if (error) return res.status(400).json({ message: error });

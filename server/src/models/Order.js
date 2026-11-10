@@ -23,8 +23,8 @@ const orderSchema = new mongoose.Schema(
       line: { type: String, required: true }, // house no, street, city
       pincode: { type: String, required: true },
     },
-    paymentId: { type: String, required: true }, // Razorpay payment id, or "test_xxxx" for a test payment
-    paymentMode: { type: String, enum: ["razorpay", "test"], required: true },
+    paymentId: { type: String, required: true }, // "test_xxxx" for a test payment
+    paymentMode: { type: String, enum: ["test"], required: true },
     status: { type: String, enum: ORDER_FLOW, default: "placed" },
     // When each status was reached: [{ status: "placed", at: Date }, { status: "packed", at: Date }, ...]
     timeline: [{ _id: false, status: String, at: Date }],

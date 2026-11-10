@@ -13,7 +13,7 @@ export default function OrderCard({ order, onAdvance, busy }) {
       <div className="flex between wrap">
         <div>
           <div className="title">Order {orderNo(order)}</div>
-          <div className="small muted">{fmtDateTime(order.createdAt)} · {order.paymentMode === "test" ? "Test payment" : "Paid online"}</div>
+          <div className="small muted">{fmtDateTime(order.createdAt)} · Test payment</div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontWeight: 800, fontSize: 18 }}>{rupees(order.total)}</div>

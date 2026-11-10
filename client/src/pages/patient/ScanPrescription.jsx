@@ -89,8 +89,7 @@ export default function ScanPrescription() {
         <CheckCircle2 size={44} color="var(--ok)" />
         <div className="card-title" style={{ justifyContent: "center", marginTop: 10 }}>Prescription saved</div>
         <p className="muted small">
-          {meds.length} medicine{meds.length !== 1 && "s"} added to your records. Daily reminders start today
-          (8:00 AM, 1:00 PM or 8:00 PM, matching when you take each medicine), and your family email gets them too if you turned that on.
+          {meds.length} medicine{meds.length !== 1 && "s"} added to your records.
         </p>
         <div className="flex wrap mt" style={{ justifyContent: "center" }}>
           <Link to="/history" className="btn btn-primary">View in Health History</Link>
