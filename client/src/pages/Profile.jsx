@@ -42,7 +42,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: "minmax(0, 320px) minmax(0, 1fr)", alignItems: "start" }}>
+    <div className="grid side-grid">
       <div className="card" style={{ textAlign: "center" }}>
         <div className="avatar avatar-lg" style={{ margin: "0 auto 12px", width: 80, height: 80, fontSize: 26 }}>{initials(user.name)}</div>
         <div style={{ fontWeight: 700, fontSize: 18 }}>{user.name}</div>
@@ -55,7 +55,7 @@ export default function Profile() {
         {msg && <div className={`alert ${msg.ok ? "alert-info" : "alert-error"} mb`}>{msg.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{msg.text}</div>}
         <div className="row">
           <div className="field"><label>Full name</label><input className="input" value={form.name} onChange={set("name")} required /></div>
-          <div className="field"><label>Phone</label><input className="input" value={form.phone} onChange={set("phone")} /></div>
+          <div className="field"><label>Phone (10 digits)</label><input className="input" inputMode="numeric" maxLength={10} pattern="\d{10}" title="Enter exactly 10 digits" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })} /></div>
         </div>
         {isDoc ? (
           <div className="row">

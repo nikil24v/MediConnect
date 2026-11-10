@@ -52,7 +52,7 @@ export default function Register() {
           <div className="field"><label>Email</label>
             <input className="input" type="email" required value={form.email} onChange={set("email")} placeholder="you@example.com" /></div>
           <div className="field"><label>Password</label>
-            <input className="input" type="password" required minLength={6} value={form.password} onChange={set("password")} placeholder="At least 6 characters" /></div>
+            <input className="input" type="password" required minLength={8} value={form.password} onChange={set("password")} placeholder="At least 8 characters" /></div>
 
           {role === "patient" ? (
             <div className="row">

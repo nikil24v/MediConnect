@@ -12,10 +12,15 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true, minlength: 6, select: false },
+    password: { type: String, required: true, minlength: [8, "Password must be at least 8 characters"], select: false },
     role: { type: String, enum: ["patient", "doctor", "pharmacist"], default: "patient" },
-    phone: String,
-    age: Number,
+    // 10 digits, the same rule the checkout uses. Spaces are removed before saving; empty is allowed.
+    phone: {
+      type: String,
+      set: (v) => (v == null ? v : String(v).replace(/\s+/g, "")),
+      validate: { validator: (v) => !v || /^\d{10}$/.test(v), message: "Phone number must be exactly 10 digits" },
+    },
+    age: { type: Number, min: [0, "Age cannot be negative"], max: [120, "Age must be 120 or less"] },
     gender: { type: String, enum: ["male", "female", "other", ""], default: "" },
     // doctor-only fields
     specialization: String,
