@@ -28,6 +28,9 @@ for (const name of ["MONGO_URI", "JWT_SECRET"]) {
 
 const production = process.env.NODE_ENV === "production";
 const app = express();
+// On a hosting service (Render, Heroku ...) every request arrives through one proxy. Trusting it lets Express
+// see each visitor's real address, which the login rate limit needs (otherwise all users would count as one).
+if (production) app.set("trust proxy", 1);
 app.use(helmet()); // safe default security headers; also removes the "X-Powered-By: Express" header
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 
