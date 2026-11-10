@@ -13,6 +13,7 @@ import orderRoutes from "./routes/orders.js";
 import scanRoutes from "./routes/scans.js";
 import devRoutes from "./routes/dev.js";
 import { startReminderJobs } from "./utils/reminders.js";
+import { checkEmailSetup } from "./utils/mailer.js";
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
@@ -49,6 +50,7 @@ connectDB(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
     startReminderJobs(); // 8:00, 13:00, 20:00 medicine reminder emails
+    checkEmailSetup(); // prints whether emails will really be sent
   })
   .catch((e) => {
     console.error("DB connection failed:", e.message);
