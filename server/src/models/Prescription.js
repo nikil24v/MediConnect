@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 const medicineSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    // The store product this line points to. Empty when the medicine isn't in the store (free text).
+    medicine: { type: mongoose.Schema.Types.ObjectId, ref: "Medicine" },
     dosage: { type: String, default: "" }, // e.g. "500 mg"
     frequency: { type: [String], enum: ["morning", "afternoon", "night"], default: [] }, // when to take it
     durationDays: { type: Number, required: true, min: 1 },

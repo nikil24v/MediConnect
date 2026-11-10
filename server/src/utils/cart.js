@@ -29,10 +29,17 @@ export async function priceCart(patientId, items) {
 
   // Names of every medicine a DOCTOR has prescribed to this patient. Photos the patient scanned don't
   // count, otherwise anyone could upload any picture to unlock prescription-only medicines.
-  let prescribed = new Set();
+  // A prescribed line counts by the store product it points to; lines without one (older prescriptions,
+  // or free text) still count by name.
+  const prescribedIds = new Set();
+  const prescribedNames = new Set();
   if (medicines.some((m) => m.requiresPrescription)) {
-    const prescriptions = await Prescription.find({ patient: patientId, source: "doctor" }).select("medicines.name");
-    prescribed = new Set(prescriptions.flatMap((p) => p.medicines.map((m) => norm(m.name))));
+    const prescriptions = await Prescription.find({ patient: patientId, source: "doctor" }).select("medicines.name medicines.medicine");
+    for (const p of prescriptions)
+      for (const m of p.medicines) {
+        if (m.medicine) prescribedIds.add(String(m.medicine));
+        prescribedNames.add(norm(m.name));
+      }
   }
 
   const lines = medicines.map((m) => {
@@ -41,7 +48,7 @@ export async function priceCart(patientId, items) {
     if (quantity > MAX_QTY) problem = `You can order at most ${MAX_QTY} at a time`;
     else if (m.stock === 0) problem = "Out of stock";
     else if (quantity > m.stock) problem = `Only ${m.stock} left in stock`;
-    else if (m.requiresPrescription && !prescribed.has(norm(m.name))) problem = "Needs a prescription that includes this medicine";
+    else if (m.requiresPrescription && !prescribedIds.has(String(m._id)) && !prescribedNames.has(norm(m.name))) problem = "Needs a prescription that includes this medicine";
 
     return {
       medicine: m._id, name: m.name, price: m.price, quantity, stock: m.stock,

@@ -3,6 +3,7 @@ import Prescription from "../models/Prescription.js";
 import { protect, allow } from "../middleware/auth.js";
 import { scanPrescription } from "../utils/scanner.js";
 import { validate } from "./prescriptions.js";
+import { linkToStore } from "../utils/linkMedicines.js";
 
 const router = Router();
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
@@ -57,6 +58,7 @@ router.post("/save", protect, allow("patient"), async (req, res) => {
   const { error, data } = validate(req.body, false); // same checks as a doctor's prescription, diagnosis is optional
   if (error) return res.status(400).json({ message: error });
   if (data.medicines.length > 20) return res.status(400).json({ message: "A prescription can have at most 20 medicines" });
+  data.medicines = await linkToStore(data.medicines); // names the AI read that match a store product get linked to it
 
   const rx = await Prescription.create({
     ...data,

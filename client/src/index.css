@@ -278,3 +278,19 @@ textarea.input { resize: vertical; min-height: 80px; }
 /* photo on the left, form on the right (stacks on phones) */
 .split-grid { grid-template-columns: minmax(0, 260px) minmax(0, 1fr); align-items: start; }
 @media (max-width: 760px) { .split-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Medicine autocomplete (doctor's prescription form) */
+.combo { position: relative; }
+.combo-list {
+  position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); list-style: none; padding: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
+  max-height: 280px; overflow-y: auto;
+}
+.combo-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; }
+.combo-item.active { background: var(--brand-50); }
+.combo-name { font-weight: 600; font-size: 14px; }
+.combo-sub { font-size: 12px; color: var(--muted); }
+.combo-tags { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.combo-empty { padding: 10px 12px; font-size: 13px; color: var(--muted); }
+.combo-hint { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.combo-hint.ok { color: var(--ok); }

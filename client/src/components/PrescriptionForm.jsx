@@ -3,9 +3,11 @@ import { Plus, Trash2 } from "lucide-react";
 import api, { errMsg } from "../api/client";
 import { today } from "../utils/helpers";
 import Modal from "./Modal";
+import MedicineSearch from "./MedicineSearch";
 
 const TIMES = ["morning", "afternoon", "night"];
-const blankMedicine = () => ({ name: "", dosage: "", frequency: [], durationDays: "", instructions: "" });
+// `medicine` = ID of the store product when the doctor picked one from the suggestions, otherwise null (free text)
+const blankMedicine = () => ({ name: "", medicine: null, dosage: "", frequency: [], durationDays: "", instructions: "" });
 
 // Doctor's form to write (or edit) the prescription of one appointment
 export default function PrescriptionForm({ appointment, onClose, onSaved }) {
@@ -75,7 +77,9 @@ export default function PrescriptionForm({ appointment, onClose, onSaved }) {
               </div>
               <div className="row">
                 <div className="field"><label>Name *</label>
-                  <input className="input" value={m.name} onChange={(e) => setMed(i, "name", e.target.value)} placeholder="e.g. Paracetamol" required /></div>
+                  <MedicineSearch value={m.name} medicineId={m.medicine} placeholder="Type to search the store, e.g. Ceti" required
+                    onType={(text) => setMeds((list) => list.map((x, k) => (k === i ? { ...x, name: text, medicine: null } : x)))} // typing again forgets the picked product
+                    onPick={(p) => setMeds((list) => list.map((x, k) => (k === i ? { ...x, name: p.name, medicine: p._id } : x)))} /></div>
                 <div className="field"><label>Dosage</label>
                   <input className="input" value={m.dosage} onChange={(e) => setMed(i, "dosage", e.target.value)} placeholder="e.g. 500 mg" /></div>
               </div>

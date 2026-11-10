@@ -19,7 +19,8 @@ export default function PrescriptionCard({ rx, canDownload, canBuy }) {
   const buyMedicines = async () => {
     setBuyError("");
     try {
-      const { data } = await api.post("/medicines/match", { names: rx.medicines.map((m) => m.name) });
+      // Lines saved with a store ID match by ID; older or free-text lines match by name
+      const { data } = await api.post("/medicines/match", { items: rx.medicines.map((m) => ({ medicine: m.medicine, name: m.name })) });
       data.found.forEach((m) => cart.ensure(m._id));
       setBuy({ added: data.found.map((m) => m.name), missing: data.missing });
     } catch (e) {

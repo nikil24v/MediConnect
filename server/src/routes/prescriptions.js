@@ -5,6 +5,7 @@ import Appointment from "../models/Appointment.js";
 import { protect, allow } from "../middleware/auth.js";
 import { buildPrescriptionPdf } from "../utils/prescriptionPdf.js";
 import { sendVisitSummary } from "../utils/notify.js";
+import { linkToStore } from "../utils/linkMedicines.js";
 
 const router = Router();
 const TIMES = ["morning", "afternoon", "night"];
@@ -35,6 +36,8 @@ export function validate(body, diagnosisRequired = true) {
 
     medicines.push({
       name,
+      // Store product picked from the autocomplete (checked against the store later, in linkToStore)
+      medicine: /^[a-f\d]{24}$/i.test(String(m.medicine || "")) ? String(m.medicine) : undefined,
       dosage: String(m.dosage || "").trim(),
       frequency: TIMES.filter((t) => freq.includes(t)), // keeps morning > afternoon > night order
       durationDays,
@@ -81,6 +84,7 @@ router.post("/", protect, allow("doctor"), async (req, res) => {
 
   const { error, data } = validate(req.body);
   if (error) return res.status(400).json({ message: error });
+  data.medicines = await linkToStore(data.medicines);
 
   const already = "A prescription already exists for this appointment. Edit it instead.";
   if (await Prescription.findOne({ appointment: appt._id })) return res.status(409).json({ message: already });
@@ -109,6 +113,7 @@ router.put("/:id", protect, allow("doctor"), async (req, res) => {
 
   const { error, data } = validate(req.body);
   if (error) return res.status(400).json({ message: error });
+  data.medicines = await linkToStore(data.medicines);
 
   Object.assign(rx, data);
   await rx.save();
