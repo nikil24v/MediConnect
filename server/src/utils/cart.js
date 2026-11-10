@@ -45,14 +45,18 @@ export async function priceCart(patientId, items) {
   const lines = medicines.map((m) => {
     const quantity = quantities.get(String(m._id));
     let problem = null;
+    let code = null; // "RX_REQUIRED" lets the order routes answer 403 (forbidden) instead of 409
     if (quantity > MAX_QTY) problem = `You can order at most ${MAX_QTY} at a time`;
     else if (m.stock === 0) problem = "Out of stock";
     else if (quantity > m.stock) problem = `Only ${m.stock} left in stock`;
-    else if (m.requiresPrescription && !prescribedIds.has(String(m._id)) && !prescribedNames.has(norm(m.name))) problem = "Needs a prescription that includes this medicine";
+    else if (m.requiresPrescription && !prescribedIds.has(String(m._id)) && !prescribedNames.has(norm(m.name))) {
+      problem = "Needs a prescription that includes this medicine";
+      code = "RX_REQUIRED";
+    }
 
     return {
       medicine: m._id, name: m.name, price: m.price, quantity, stock: m.stock,
-      requiresPrescription: m.requiresPrescription, imageUrl: m.imageUrl, pack: m.pack, problem,
+      requiresPrescription: m.requiresPrescription, imageUrl: m.imageUrl, pack: m.pack, problem, code,
     };
   });
 

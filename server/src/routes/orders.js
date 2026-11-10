@@ -51,9 +51,11 @@ function checkAddress(input = {}) {
   return { data: { fullName, phone, line, pincode } };
 }
 
-const firstProblem = (cart) => {
-  const bad = cart.lines.find((l) => l.problem);
-  return `${bad.name}: ${bad.problem}`;
+// Refuses a cart that has a problem. A prescription-only medicine without a doctor's prescription is
+// "forbidden" (403); other problems (out of stock, too many) are a "conflict" with the current stock (409).
+const rejectCart = (res, cart) => {
+  const bad = cart.lines.find((l) => l.code === "RX_REQUIRED") || cart.lines.find((l) => l.problem);
+  return res.status(bad.code === "RX_REQUIRED" ? 403 : 409).json({ message: `${bad.name}: ${bad.problem}` });
 };
 
 // ---------- patient: cart + checkout ----------
@@ -74,7 +76,7 @@ router.post("/preview", protect, allow("patient"), async (req, res) => {
 router.post("/pay", protect, allow("patient"), async (req, res) => {
   const cart = await priceCart(req.user._id, req.body.items);
   if (cart.error) return res.status(400).json({ message: cart.error });
-  if (!cart.ok) return res.status(409).json({ message: firstProblem(cart) });
+  if (!cart.ok) return rejectCart(res, cart);
   const address = checkAddress(req.body.address);
   if (address.error) return res.status(400).json({ message: address.error });
 
@@ -96,7 +98,7 @@ router.post("/pay", protect, allow("patient"), async (req, res) => {
 router.post("/", protect, allow("patient"), async (req, res) => {
   const cart = await priceCart(req.user._id, req.body.items);
   if (cart.error) return res.status(400).json({ message: cart.error });
-  if (!cart.ok) return res.status(409).json({ message: firstProblem(cart) });
+  if (!cart.ok) return rejectCart(res, cart);
   const address = checkAddress(req.body.address);
   if (address.error) return res.status(400).json({ message: address.error });
 
