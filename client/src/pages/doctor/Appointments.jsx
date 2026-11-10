@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { CalendarDays, Clock, Brain, Check, X, ClipboardCheck, FileText } from "lucide-react";
 import api, { errMsg } from "../../api/client";
-import { fmtDate, fmtTime, initials } from "../../utils/helpers";
+import { fmtDate, fmtTime, initials, symptomName } from "../../utils/helpers";
 import Empty from "../../components/Empty";
 import Modal from "../../components/Modal";
 import PrescriptionForm from "../../components/PrescriptionForm";
 
-const TABS = ["pending", "confirmed", "completed", "cancelled", "all"];
+const TABS = ["pending", "confirmed", "completed", "cancelled", "expired", "all"];
 
 export default function DoctorAppointments() {
   const [appts, setAppts] = useState([]);
@@ -90,7 +90,7 @@ export default function DoctorAppointments() {
           {open.prediction ? (
             <div className="card mb" style={{ boxShadow: "none", background: "#f8fafc", padding: 16 }}>
               <div className="flex mb"><Brain size={18} color="var(--brand)" /><strong>AI pre-screening ({open.prediction.model})</strong></div>
-              <div className="chips mb">{open.prediction.symptoms.map((s) => <span key={s} className="chip">{s.replaceAll("_", " ")}</span>)}</div>
+              <div className="chips mb">{open.prediction.symptoms.map((s) => <span key={s} className="chip">{symptomName(s)}</span>)}</div>
               {open.prediction.results.map((r) => (
                 <div key={r.disease} style={{ marginBottom: 8 }}>
                   <div className="flex between small"><span>{r.disease}</span><strong>{r.confidence}%</strong></div>

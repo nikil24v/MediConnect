@@ -5,7 +5,7 @@ import api, { errMsg } from "../../api/client";
 import { fmtDate, fmtTime, initials } from "../../utils/helpers";
 import Empty from "../../components/Empty";
 
-const TABS = ["all", "pending", "confirmed", "completed", "cancelled"];
+const TABS = ["all", "pending", "confirmed", "completed", "cancelled", "expired"];
 
 export default function PatientAppointments() {
   const [appts, setAppts] = useState([]);

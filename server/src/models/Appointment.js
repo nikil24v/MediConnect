@@ -10,7 +10,7 @@ const appointmentSchema = new mongoose.Schema(
     prediction: { type: mongoose.Schema.Types.ObjectId, ref: "Prediction" }, // optional AI pre-screening
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled"],
+      enum: ["pending", "confirmed", "completed", "cancelled", "expired"], // expired = nobody accepted it before its time
       default: "pending",
     },
     notes: { type: String, default: "" }, // doctor's notes
@@ -22,6 +22,12 @@ const appointmentSchema = new mongoose.Schema(
 // Even if 2 patients click "Book" at the exact same moment, MongoDB rejects the second one.
 appointmentSchema.index(
   { doctor: 1, date: 1, time: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ["pending", "confirmed"] } } }
+);
+
+// Same rule for the patient: one person cannot be booked with two different doctors at the same time.
+appointmentSchema.index(
+  { patient: 1, date: 1, time: 1 },
   { unique: true, partialFilterExpression: { status: { $in: ["pending", "confirmed"] } } }
 );
 
